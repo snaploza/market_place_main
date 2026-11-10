@@ -3,11 +3,9 @@ from django.contrib.auth import login, authenticate, logout
 from .forms import RegisterForm
 from .models import Product
 
-
 def home(request):
-    products = Product.objects.all()
+    products = Product.objects.select_related('owner').prefetch_related('categories').all()
     return render(request, 'store/home.html', {'products': products})
-
 
 def register(request):
     if request.method == 'POST':
@@ -18,23 +16,17 @@ def register(request):
             return redirect('home')
     else:
         form = RegisterForm()
-
-    return render(request, 'marketplace/register.html', {'form': form})
-
+    return render(request, 'store/register.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-
         user = authenticate(request, username=username, password=password)
-
         if user:
             login(request, user)
             return redirect('home')
-
-    return render(request, 'marketplace/login.html')
-
+    return render(request, 'store/login.html')  # <-- Cambiado de marketplace/login.html a store/login.html
 
 def logout_view(request):
     logout(request)
